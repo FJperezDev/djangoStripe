@@ -28,14 +28,18 @@ class CreatePaymentIntentView(APIView):
         except stripe.error.StripeError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+class GetPublishableKey(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response({'publishableKey':settings.STRIPE_PUBLISHABLE_KEY})
+
+
 class PaymentSheetCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         try:
-            print("Usuario autenticado:", request.user)
-            print("Email:", request.user.email)
-            print("Body recibido:", request.data)
 
             amount = int(request.data.get("amount", 0))
             if amount <= 0:

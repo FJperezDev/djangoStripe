@@ -1,6 +1,6 @@
 from django.urls import path
 from rest_framework import routers
-from .views import UserViewSet, RegisterView, LogoutView, LoggedUserView, LoginView, LogoutAllView, PaymentSheetCreateView, CreatePaymentIntentView
+from .views import UserViewSet, RegisterView, LogoutView, LoggedUserView, LoginView, LogoutAllView, PaymentSheetCreateView, CreatePaymentIntentView, GetPublishableKey
 from .webhooks import stripe_webhook
 
 # from django.contrib.auth.views import LoginView, LogoutView
@@ -37,6 +37,7 @@ urlpatterns += [
     path("create-payment-intent/", CreatePaymentIntentView.as_view(), name="create-payment-intent"),
     path("payment-sheet/", PaymentSheetCreateView.as_view(), name="payment-sheet"),
     path("webhook/", stripe_webhook, name="stripe-webhook"),
+    path("pk/", GetPublishableKey.as_view(), name="publishableKey"),
 ]
 
 # This will automatically create the URL patterns for the ProjectViewSet, allowing CRUD operations on the Project model.
