@@ -32,23 +32,33 @@ class PaymentSheetCreateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        # recálculo server-side del amount
-        amount = int(request.data.get("amount"))
-        # reusar customer_id si ya existe en DB, si no crear
-        # aquí simplificado: crear siempre
-        customer = stripe.Customer.create(email=request.user.email)
-        payment_intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency="eur",
-            customer=customer.id,
-        )
-        ephemeral_key = stripe.EphemeralKey.create(
-            customer=customer.id,
-            stripe_version="2022-11-15"  # usa la versión que el SDK requiere; comprobar docs
-        )
-        return Response({
-            "paymentIntent": payment_intent.client_secret,
-            "ephemeralKey": ephemeral_key.secret,
-            "customer": customer.id,
-            "publishableKey": settings.STRIPE_PUBLISHABLE_KEY,
-        })
+        try:
+            print("Usuario autenticado:", request.user)
+            print("Email:", request.user.email)
+            print("Body recibido:", request.data)
+
+            amount = int(request.data.get("amount", 0))
+            if amount <= 0:
+                return Response({"error": "Amount inválido"}, status=400)
+
+            customer = stripe.Customer.create(email=request.user.email)
+            payment_intent = stripe.PaymentIntent.create(
+                amount=amount,
+                currency="eur",
+                customer=customer.id,
+            )
+            ephemeral_key = stripe.EphemeralKey.create(
+                customer=customer.id,
+                stripe_version="2022-11-15"
+            )
+            return Response({
+                "paymentIntent": payment_intent.client_secret,
+                "ephemeralKey": ephemeral_key.secret,
+                "customer": customer.id,
+                "publishableKey": settings.STRIPE_PUBLISHABLE_KEY,
+            })
+        except Exception as e:
+            import traceback
+            print("Error en PaymentSheetCreateView:", e)
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=500)
