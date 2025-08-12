@@ -33,7 +33,7 @@ urlpatterns += [
     path('account/profile/', LoggedUserView.as_view(), name='profile'),
 ]
 
-urlpatterns = [
+urlpatterns += [
     path("create-payment-intent/", CreatePaymentIntentView.as_view(), name="create-payment-intent"),
     path("payment-sheet/", PaymentSheetCreateView.as_view(), name="payment-sheet"),
     path("webhook/", stripe_webhook, name="stripe-webhook"),
