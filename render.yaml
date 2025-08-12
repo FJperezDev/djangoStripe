@@ -10,7 +10,7 @@ services:
     name: backend
     runtime: python
     buildCommand: './build.sh'
-    startCommand: 'python -m gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker'
+    startCommand: 'gunicorn backend.asgi:application -k uvicorn.workers.UvicornWorker --workers ${WEB_CONCURRENCY} --timeout 60'
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -19,5 +19,4 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: WEB_CONCURRENCY
-        value: 4
-      # - key: EXPO_EXTERNAL_HOSTNAME use it on render.com
+        value: 1
