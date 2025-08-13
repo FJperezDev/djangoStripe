@@ -41,13 +41,16 @@ class PaymentSheetCreateView(APIView):
     def post(self, request):
         try:
 
-            amount = int(request.data.get("amount", 0))
+            price_id = request.data.get("price_id")
+
+            price = stripe.Price.retrieve(price_id)
+
+            amount = price.unit_amount
+            currency = price.currency
+
             if amount <= 0:
                 return Response({"error": "Amount inválido"}, status=400)
-
             user = request.user
-
-############################# REVISAR #############################
 
             if not getattr(user, "stripe_customer_id", None):
                 # No hay cliente en BD → crear uno
@@ -62,16 +65,13 @@ class PaymentSheetCreateView(APIView):
                             message="Customer deleted", param="id"
                         )
                 except InvalidRequestError:
-                    # ID inválido o cliente borrado → crear otro
                     customer = stripe.Customer.create(email=user.email)
                     user.stripe_customer_id = customer.id
                     user.save(update_fields=["stripe_customer_id"])
 
-############################# REVISAR #############################
-
             payment_intent = stripe.PaymentIntent.create(
                 amount=amount,
-                currency="eur",
+                currency=currency,
                 customer=customer.id,
             )
             ephemeral_key = stripe.EphemeralKey.create(
