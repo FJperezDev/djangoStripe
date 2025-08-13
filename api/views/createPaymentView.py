@@ -1,4 +1,5 @@
 import stripe
+from stripe.error import InvalidRequestError
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -45,13 +46,19 @@ class PaymentSheetCreateView(APIView):
                 return Response({"error": "Amount inválido"}, status=400)
 
             user = request.user
-            
-            try:
-                customer = stripe.Customer.retrieve(user.stripe_customer_id)
-            except stripe.error.InvalidRequestError as e:
+
+            if not user.stripe_customer_id:
                 customer = stripe.Customer.create(email=user.email)
                 user.stripe_customer_id = customer.id
                 user.save()
+            else:
+                try:
+                    customer = stripe.Customer.retrieve(user.stripe_customer_id)
+                except InvalidRequestError:
+                    # Customer inexistente → crear otro
+                    customer = stripe.Customer.create(email=user.email)
+                    user.stripe_customer_id = customer.id
+                    user.save()
                 
             payment_intent = stripe.PaymentIntent.create(
                 amount=amount,
