@@ -29,7 +29,6 @@ class CreatePaymentIntentView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class GetPublishableKey(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         return Response({'publishableKey':settings.STRIPE_PUBLISHABLE_KEY})
