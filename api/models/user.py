@@ -13,6 +13,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     statistics = models.JSONField(default=dict, blank=True)
+    stripe_customer_id = models.CharField(max_length=255, blank=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']  # username sigue siendo obligatorio si usas AbstractUser

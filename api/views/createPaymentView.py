@@ -44,7 +44,15 @@ class PaymentSheetCreateView(APIView):
             if amount <= 0:
                 return Response({"error": "Amount inválido"}, status=400)
 
-            customer = stripe.Customer.create(email=request.user.email)
+            user = request.user
+
+            if not user.stripe_customer_id:
+                customer = stripe.Customer.create(email=user.email)
+                user.stripe_customer_id = customer.id
+                user.save()
+            else:
+                customer = stripe.Customer.retrieve(user.stripe_customer_id)
+                
             payment_intent = stripe.PaymentIntent.create(
                 amount=amount,
                 currency="eur",
